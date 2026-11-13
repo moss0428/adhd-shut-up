@@ -1,0 +1,32 @@
+[package]
+name = "shuidi"
+version = "0.1.21"
+description = "ADHD，闭嘴！— macOS 专注计时器"
+license = "MIT"
+repository = "https://github.com/moss0428/adhd-shut-up"
+edition = "2024"
+rust-version = "1.89"
+publish = false
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+objc2-foundation = "0.3"
+objc2-quartz-core = { version = "0.3", default-features = false, features = ["std", "CALayer", "objc2-core-foundation"] }
+objc2-web-kit = { version = "0.3", default-features = false, features = [
+    "std", "objc2-app-kit", "objc2-core-foundation", "block2",
+    "WKNavigation", "WKScriptMessage", "WKScriptMessageHandler",
+    "WKUserContentController", "WKWebView", "WKWebViewConfiguration",
+    "WKWebsiteDataStore",
+] }
+
+[profile.release]
+lto = "thin"
+strip = "debuginfo"

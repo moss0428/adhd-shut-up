@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+<title>__APP_NAME__</title>
+<style>__STYLE__</style>
+</head>
+<body>
+<main class="shell">
+  <p class="notice" id="notice" role="status" hidden></p>
+
+  <section class="focus-page" data-view="focus" aria-label="专注">
+    <div class="focus-content">
+      <h1 id="phase-title" aria-live="polite">专注计时</h1>
+      <div class="countdown" id="countdown" role="timer" aria-live="off">
+        <span>15<span class="time-unit">分</span></span>
+      </div>
+      <form id="duration-form">
+        <div class="presets" role="group" aria-label="专注时长">
+          <button type="button" data-duration="15" aria-pressed="true">15分</button>
+          <button type="button" data-duration="30" aria-pressed="false">30分</button>
+          <button type="button" data-duration="custom" aria-pressed="false" aria-controls="custom-duration">自定</button>
+        </div>
+        <label class="duration-input" id="custom-duration" hidden>
+          专注 <input id="focus-minutes" type="number" min="1" max="180" step="1" required> 分钟
+        </label>
+        <label class="duration-input">休息 <input id="rest-minutes" type="number" value="5" min="1" max="60" step="1" required> 分钟</label>
+        <label class="todo-picker">
+          待办 <select id="focus-todo"><option value="">不选待办</option></select>
+        </label>
+      </form>
+      <p id="focus-todo-name" class="focus-todo-name" hidden></p>
+      <div class="timer-progress" id="timer-progress" role="progressbar" aria-label="本次计时进度" aria-valuenow="0" hidden><span></span></div>
+      <div class="actions">
+        <button type="button" class="primary" id="primary-action" disabled>开始专注</button>
+        <button type="button" class="quiet" id="secondary-action" hidden></button>
+      </div>
+    </div>
+
+    <div class="focus-audio">
+      <label>
+        <input id="focus-audio-enabled" type="checkbox" role="switch" disabled>
+        专注时播放白噪音
+      </label>
+      <select id="focus-audio-track" aria-label="白噪音音源" disabled>
+        <option value="light_rain">阴天小雨</option>
+        <option value="coffee_shop">咖啡店</option>
+        <option value="library">图书馆</option>
+        <option value="fireplace">壁炉边</option>
+      </select>
+    </div>
+    <footer class="focus-footer">
+      <button class="reward-link" id="open-reward" type="button">
+        <span id="reward-preview-title">设定奖励</span>
+        <span id="reward-preview-progress" hidden></span>
+        <span class="chevron" aria-hidden="true"></span>
+      </button>
+    </footer>
+  </section>
+
+  <section class="subpage" data-view="todos" aria-labelledby="todos-heading" hidden>
+    <header class="page-heading heading-actions">
+      <h1 id="todos-heading">待办</h1>
+      <button class="primary" id="new-todo" type="button" aria-controls="todo-form" aria-expanded="false">新增待办</button>
+    </header>
+    <form class="todo-form" id="todo-form" hidden>
+      <label class="form-field">待办名称<input id="todo-name" type="text" required></label>
+      <div class="form-field">
+        <span id="deadline-label">截止时间（可选）</span>
+        <button class="deadline-trigger" id="todo-due-button" type="button"
+                aria-haspopup="dialog" aria-controls="deadline-dialog" aria-expanded="false"
+                aria-labelledby="deadline-label deadline-value deadline-clock">
+          <span class="calendar-icon" aria-hidden="true"></span>
+          <span id="deadline-value">选择日期和时间</span>
+          <span id="deadline-clock" hidden></span>
+          <span class="deadline-chevron" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="actions">
+        <button class="primary" id="save-todo" type="submit">保存待办</button>
+        <button class="quiet" id="cancel-todo" type="button">取消</button>
+      </div>
+    </form>
+    <p class="empty-state" id="todos-empty">还没有待办</p>
+    <ul class="todo-list" id="todo-list" aria-label="待办列表"></ul>
+  </section>
+
+  <section class="subpage" data-view="history" aria-labelledby="history-heading" hidden>
+    <header class="page-heading"><h1 id="history-heading">专注记录</h1></header>
+    <div class="presets history-modes" role="group" aria-label="记录查看方式">
+      <button type="button" data-history-mode="day" aria-pressed="true">按日期</button>
+      <button type="button" data-history-mode="todo" aria-pressed="false">按待办</button>
+    </div>
+    <div class="history-card">
+      <p class="empty-state" id="history-empty" hidden>还没有待办专注记录</p>
+      <table id="history-table">
+        <thead><tr><th id="history-label" scope="col">日期</th><th scope="col">完成次数</th><th scope="col">专注时长</th></tr></thead>
+        <tbody id="history-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="subpage" data-view="reward" aria-labelledby="reward-heading" hidden>
+    <header class="page-heading"><h1 id="reward-heading">奖励目标</h1></header>
+    <div class="goal-card" id="goal-summary" hidden>
+      <p class="goal-state" id="goal-state"></p>
+      <h2 id="goal-name"></h2>
+      <div class="goal-meter"><progress id="goal-meter" value="0" max="1" aria-label="奖励进度"></progress></div>
+      <p class="goal-progress-text" id="goal-progress-text"></p>
+      <div class="actions">
+        <button class="primary" id="claim-goal" type="button" hidden>标记已领取</button>
+        <button class="quiet" id="edit-goal" type="button">编辑目标</button>
+      </div>
+    </div>
+    <form class="goal-card goal-form" id="goal-form" hidden>
+      <p class="form-note" id="goal-note">从设定目标起，累计完成的专注时长。</p>
+      <label class="form-field">想买的东西<input id="goal-item" type="text" maxlength="60" placeholder="例如 一本想买的书" required></label>
+      <div class="form-field">
+        <label for="goal-duration">目标时长</label>
+        <div class="goal-duration">
+          <input id="goal-duration" type="number" min="1" max="1000" step="1" required>
+          <select id="goal-unit" aria-label="目标时长单位"><option value="60">小时</option><option value="1">分钟</option></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="submit">保存目标</button>
+        <button class="quiet" id="cancel-goal" type="button" hidden>取消</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<dialog class="deadline-dialog" id="deadline-dialog" aria-label="选择截止时间">
+  <form id="deadline-form" class="deadline-editor" novalidate>
+    <header class="calendar-header">
+      <h2 id="deadline-month" aria-live="polite"></h2>
+      <div class="calendar-nav">
+        <button class="quiet" id="deadline-today" type="button">今天</button>
+        <button class="quiet month-arrow previous-month" id="deadline-previous" type="button" aria-label="上个月"></button>
+        <button class="quiet month-arrow next-month" id="deadline-next" type="button" aria-label="下个月"></button>
+      </div>
+    </header>
+    <div class="calendar-week" aria-hidden="true">
+      <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+    </div>
+    <div class="calendar-days" id="deadline-days" role="group" aria-labelledby="deadline-month"></div>
+    <div class="deadline-entry">
+      <label>日期<input id="deadline-date" type="text" placeholder="YYYY-MM-DD" maxlength="10" autocomplete="off" aria-describedby="deadline-error"></label>
+      <label>时刻<input id="deadline-time" type="text" placeholder="HH:MM" maxlength="5" autocomplete="off" aria-describedby="deadline-error"></label>
+    </div>
+    <p class="deadline-error" id="deadline-error" role="status" hidden></p>
+    <footer class="deadline-actions">
+      <button class="quiet" id="deadline-clear" type="button">清除截止时间</button>
+      <div class="deadline-confirm">
+        <button class="quiet" id="deadline-cancel" type="button">取消</button>
+        <button class="primary" id="deadline-confirm" type="submit">确定</button>
+      </div>
+    </footer>
+  </form>
+</dialog>
+
+<script>__DEADLINE_SCRIPT__</script>
+<script>__SCRIPT__</script>
+</body>
+</html>
